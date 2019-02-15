@@ -1,16 +1,16 @@
+# Overview（WIP）
 
-# **WIP**
+この記事は
+[pandasクックブック-―Pythonによるデータ処理のレシピ](https://www.amazon.co.jp/pandas%E3%82%AF%E3%83%83%E3%82%AF%E3%83%96%E3%83%83%E3%82%AF-%E2%80%95Python%E3%81%AB%E3%82%88%E3%82%8B%E3%83%87%E3%83%BC%E3%82%BF%E5%87%A6%E7%90%86%E3%81%AE%E3%83%AC%E3%82%B7%E3%83%94%E2%80%95-Theodore-Petrou/dp/425412242X) の著者の方の以下の記事、
 
-[pandasクックブック-―Pythonによるデータ処理のレシピ](https://www.amazon.co.jp/pandas%E3%82%AF%E3%83%83%E3%82%AF%E3%83%96%E3%83%83%E3%82%AF-%E2%80%95Python%E3%81%AB%E3%82%88%E3%82%8B%E3%83%87%E3%83%BC%E3%82%BF%E5%87%A6%E7%90%86%E3%81%AE%E3%83%AC%E3%82%B7%E3%83%94%E2%80%95-Theodore-Petrou/dp/425412242X) の著者の方の記事
-
-https://medium.com/dunder-data/minimally-sufficient-pandas-a8e67f2a2428
+[Minimally Sufficient Pandas](https://medium.com/dunder-data/minimally-sufficient-pandas-a8e67f2a2428)
 
 を、許可を得て翻訳中のものです。
-
 https://twitter.com/arc279/status/1095511875050033152
 
+不自然な点、間違っている点などがありましたら指摘してもらえると助かります。
 
-
+以下、翻訳です。
 
 ---
 
