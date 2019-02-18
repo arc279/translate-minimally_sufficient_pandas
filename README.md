@@ -947,6 +947,67 @@ True
 しかし、読みやすく1行のコードで計算処理を書けるため、私は今後も使用していきます。
 
 
+## `pivot` と `pivot_table`
+
+ほとんど役に立たず、基本的に無視しても構わない `pivot` メソッドがあります。
+この関数は `pivot_table` に似ていますが、一切集約処理をせず、`index` `columns` `values` の3つのパラメータしかありません。
+これらの3つのパラメータはすべて `pivot_table` にあります。
+集約せずにデータを再整形します。
+新しい簡単なデータセットを使った例を見てみましょう。
+
+```py
+>>> df = pd.read_csv('data/state_fruit.csv')
+>>> df
+```
+![](https://cdn-images-1.medium.com/max/1600/1*2bQtsDhuuQxBId3GMx8lDw.png)
+
+`pivot` メソッドを使用してこのデータを変形し、 `fruit` が列になり、`weight` が値になるようにしましょう。
+
+```py
+>>> df.pivot(index='state', columns='fruit', values='weight')
+```
+![](https://cdn-images-1.medium.com/max/1600/1*fQiTmLrOk-72BTbFhIwbnQ.png)
+
+`pivot` メソッドを使うことで、集約、あるいは他の何かをせずにデータの再整形だけが出来ます。
+一方、`pivot_table` では集計を行う必要があります。
+この場合だと、`state` と `fruit` ごとに1つの値しかあないため、非常に多くの集約関数が同じ値を返します。
+`max` 集計関数を使用して、これとまったく同じテーブルを再作成しましょう。
+
+```py
+>>> df.pivot_table(index='state', columns='fruit', 
+                   values='weight', aggfunc='max')
+```
+
+### `pivot` の問題点
+
+`pivot` メソッドにはいくつかの大きな問題があります。
+まず、 `index` と `columns` の両方が単一の列に設定されている場合にのみ処理できます。
+インデックス内に複数の列を保持したい場合は、 `pivot` を使用することはできません。
+また、`index` と `columns` の同じ組み合わせが複数回現れると、集計が実行されないため、エラーが発生します。
+上記と似ていますが、2行追加されているデータセットを使用して、このエラーを見てましょう。
+
+```py
+>>> df2 = pd.read_csv('data/state_fruit2.csv')
+>>> df2
+```
+![](https://cdn-images-1.medium.com/max/1600/1*YswZHMMp7MkMku52zPi8sw.png)
+
+これを `pivot` しようとしても、 `Oranges` と `Florida` `Texas` の両方の組み合わせに重複があるため、うまくいきません。
+
+```py
+>>> df2.pivot(index='state', columns='fruit', values='weight')
+ValueError: Index contains duplicate entries, cannot reshape
+```
+
+このデータを再整形する場合は、値をどのように集計するかを決めなければなりません。
+
+### ガイダンス： `pivot_table` のみを使用し、`pivot`を使用しないことを検討してください。
+
+`pivot` でできることは全て `pivot_table` でもできます。
+この場合、集計を実行する必要がない場合でも、集約関数を指定する必要があります。
+
+
+
 ---
 
 ＜＜＜WIP＞＞＞
