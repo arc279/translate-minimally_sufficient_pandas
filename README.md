@@ -364,6 +364,172 @@ Pandasは bool 値の DataFrame を反転するための演算子 `~` を提供�
 ### ガイドライン： `isna` と `notna` を使いましょう
 （訳注）`isnull` `notnull` ではなく
 
+## 算術演算子、比較演算子とそれに対応するメソッド
+
+全ての算術演算子には、同等の機能を提供するメソッドがあります。
+
+（訳注：表にしました）
+
+|op|method|
+|-|-|-|
+|+|`add`|
+|-|`sub` `subtract`|
+|*|`mul` `multiply`|
+|/|`div` `divide` `truediv`|
+|**|`pow`|
+|//|`floordiv`|
+|%|`mod`|
+
+全ての比較演算子にも、同等の機能のメソッドがあります。
+
+|op|method|
+|-|-|-|
+|>|`gt`|
+|<|`lt`|
+|>=|`ge`|
+|<=|`le`|
+|==|`eq`|
+|!=|`ne`|
+
+`ugds` 列（*undergraduate population* の略）のSeriesを選択し、100を加えることで、
+`+` 演算子とそれに対応するメソッドの両方で同じ結果が得られることを確認しましょう。
+
+```py
+>>> ugds = college['ugds']
+>>> ugds_operator = ugds + 100
+>>> ugds_method = ugds.add(100)
+>>> ugds_operator.equals(ugds_method)
+True
+```
+
+### 各学校の zスコアを計算する
+
+もう少し複雑な例を見てみましょう。
+以下では、 *institution* 列をインデックスにセットして、`SAT` 列を選択します。
+これらのスコアを提供していない学校は `dropna` で落とします。
+
+```py
+>>> college_idx = college.set_index('instnm')
+>>> sats = college_idx[['satmtmid', 'satvrmid']].dropna()
+>>> sats.head()
+```
+
+![](https://cdn-images-1.medium.com/max/1600/1*n3o0CmDXaQxFQ0VlHbNtDA.png)
+
+各大学の SATスコアの z-score に興味があるとしましょう。
+（訳注：名前が紛らわしいですが [z-score](https://ja.wikipedia.org/wiki/%E6%A8%99%E6%BA%96%E5%BE%97%E7%82%B9) はいわゆる偏差値で、SATスコアが計算対象のスコアです）
+これを計算するには、平均値を引き、標準偏差で割る必要があります。
+まず各列の平均と標準偏差を計算しましょう。
+
+```py
+>>> mean = sats.mean()
+>>> mean
+satmtmid    530.958615
+satvrmid    522.775338
+dtype: float64
+>>> std = sats.std()
+>>> std
+satmtmid    73.645153
+satvrmid    68.591051
+dtype: float64
+```
+
+算術演算子を使った計算結果を見てみます。
+
+```py
+>>> zscore_operator = (sats - mean) / std
+>>> zscore_operator.head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*JYPrbX1Jd6HFTOmAL3aN-g.png)
+
+メソッドを使った方法も算出して、結果を比べてみましょう。
+
+```py
+>>> zscore_methods = sats.sub(mean).div(std)
+>>> zscore_operator.equals(zscore_methods)
+True
+```
+
+### 実際にメソッドが必要になる場合
+
+いまの所、演算子よりもメソッドを使ったほうが良い場面には出会ったことがありません。
+メソッドを使用する場合でしか対応できないケースを見てみましょう。
+college データセットには、学部生の人種の相対頻度である連続値の列が9つ含まれています。
+`ugds_white` から  `ugds_unkn` までです。
+これらの列を新たな DataFrame に取り出しましょう。
+
+```py
+>>> college_race = college_idx.loc[:, ‘ugds_white’:’ugds_unkn’]
+>>> college_race.head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*__Co7Qx7JYY1bAeJC2ctJw.png)
+
+学校ごとに人種別の生徒数に関心があるとしましょう。
+学部全体の人口に各列を掛ける必要があります。
+Series として `ugds` 列を選択しましょう。
+
+```py
+>>> ugds = college_idx['ugds']
+>>> ugds.head()
+instnm
+Alabama A & M University                4206.0
+University of Alabama at Birmingham    11383.0
+Amridge University                       291.0
+University of Alabama in Huntsville     5451.0
+Alabama State University                4811.0
+Name: ugds, dtype: float64
+```
+
+そして、先程の `college_race` にこの Series を掛けます。
+直感的にはこれでうまくいきそうですが、そう上手くはいきません。
+代わりに、7544列の巨大な DataFrame になります。
+
+```py
+>>> df_attempt = college_race * ugds
+>>> df_attempt.head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*X3bdE6iFrFKTLLqrkipLAg.png)
+```py
+>>> df_attempt.shape
+(7535, 7544)
+```
+
+### インデックス あるいは 列の自動調整
+
+Pandas のオブジェクト同士の計算は常に、互いのインデックスあるいは列の間で調整が行われます。
+上記の操作では、 `college_race`(DataFrame) と `ugds`(Series) を掛け合わせました。
+Pandasは自動的に（そして暗黙的に） `college_race` の列を `ugds` のインデックスの値に揃えました。
+
+`college_race` 列の値はどれも `ugds` のインデックス値と一致していません。
+Pandasは、一致するかどうかに関わらず、 outer join することによって調整します。
+結果は、全ての値が欠損値である馬鹿げた DataFrame になります．
+`college_race` DataFrameの元の列名を表示するには、右端までスクロールします。
+
+### メソッドを使うことで調整の方向を変更する
+
+全ての演算子の機能は単一であり、乗算演算子 `*` の機能を私達が変更することは出来ません。
+一方メソッドは、パラメータによって操作を制御できるようにすることが出来ます。
+
+### `mul` メソッドの `axis` パラメータを使います
+
+上記で述べた演算子に対応する全てのメソッドには、計算の方向を変更できる `axis` パラメータがあります。
+DataFrame の列を Series のインデックスに合わせる代わりに、DataFrame のインデックスを Series のインデックスに合わせることができます。
+今からやり方をお見せしましょう。
+
+```py
+>>> df_correct = college_race.mul(ugds, axis='index').round(0)
+>>> df_correct.head()
+```
+![](https://cdn-images-1.medium.com/max/1200/1*82_NlxL9Dt_c1BiiJQgB6A.png)
+
+`axis` パラメータのデフォルト値は *columns* に設定されています。
+適切な調整が行われるように、それを *index* に変更しました。
+
+### ガイドライン：どうしても必要なときだけ算術/比較メソッドを使い、そうでなければ演算子を使う
+
+算術演算子と比較演算子の方がより一般的であり、こちらを最初に試しましょう。
+どうしても演算子では解決できない場合に限り、同等のメソッドを使用しましょう。
+
 
 ---
 
