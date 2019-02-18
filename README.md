@@ -810,6 +810,143 @@ MultiIndex が DataFrame に追加する機能は殆どありません。
 
 ### ガイダンス： MultiIndex の使用を避ける。`groupby` の呼び出し後は、列名を変更してインデックスをリセットすることによってフラット化します。
 
+## `groupby` `pivot_table` `crosstab` の類似点
+
+集約時の `groupby`、`pivot_table`、および `pd.crosstab` は本質的に同じ処理をしている、ということを知って、驚く人もいるかも知れません。ただし、それぞれに固有の使用例があるため、すべてが Minimally Sufficient Pandas に含まれるための条件を満たしています。
+
+### `groupby` の集約と `pivot_table` の等価性
+
+`groupby` メソッドを用いて集約をすることは、 `pivot_table` メソッドが行っていることと本質的には同じです。
+どちらのメソッドもまったく同じデータを返しますが、 `shape` が異なります。
+これが事実であることを証明する、簡単な例を見てみましょう。
+新たに、ヒューストン市の従業員の人口統計情報を含むデータセットを使用します。
+
+```py
+>>> emp = pd.read_csv('data/employee.csv')
+>>> emp.head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*G9zcX9qfMiIa9KRp37PI7g.png)
+
+部門別の性別による平均給与を `groupby` で集計してみましょう。
+
+```py
+>>> emp.groupby(['dept', 'gender']).agg({'salary':'mean'}).round(-3)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*JrrEt2TsSHcq1MDFB3GIlQ.png)
+
+`pivot_table` を使ってこのデータを複製することができます。
+
+```py
+>>> emp.pivot_table(index='dept', columns='gender', 
+                    values='salary', aggfunc='mean').round(-3)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*7imHba0Pm2hzF9sdqOtagQ.png)
+
+値がまったく同じことに注意してください。
+唯一の違いは、`gender` 列がピボットされているため、ユニークな値が列名になっていることです。
+`groupby` の3要素が `pivot_table` にもあります。
+
+* 集約のキーになる列は `index` `columns` パラメータで指定され、
+* 集約対象の列は `values` パラメータに渡され、
+* 集計関数は `aggfunc` パラメータに渡されます。
+
+両方の集約のキー列を `list` として `index` パラメーターに渡すことで、データと `shape` の両方を正確に複製することが実際に可能です。
+
+```py
+>>> emp.pivot_table(index=['dept','gender'], 
+                    values='salary', aggfunc='mean').round(-3)
+```
+
+通常、`pivot_table` は2つの集約のキーを使用します。1つはインデックスとして、もう1つは列としてです。
+ただし、単一の集約キー列を使用することは出来ます。
+以下は、`groupby` を使用して単一の集約キー列を正確に複製したものです。
+
+```py
+>>> df1 = emp.groupby('dept').agg({'salary':'mean'}).round(0)
+>>> df2 = emp.pivot_table(index='dept', values='salary', 
+                          aggfunc='mean').round(0)
+>>> df1.equals(df2)
+True
+```
+
+### ガイダンス： グループ間を比較する際には `pivot_table` を使う
+
+私は、グループ間で値を比較する際には `pivot_table` を好み、分析を継続したい場合は `groupby` を使用します。
+上記の通り、`pivot_table` の結果を見ると、男性と女性の給料が用意に比較できます。
+要約することで人間に見やすくなり、記事やブログ投稿に表示されるデータの種類も少なくなります。
+私はピボットテーブルを集計の結果と見なしています。
+
+`groupby` の結果は[きちんとした形式](http://vita.had.co.nz/papers/tidy-data.html)になるでしょうし、
+それはその後の分析を容易にするのに役立ちますが、解釈可能ではありません。
+
+### `pivot_table` と `pd.crosstab` の等価性
+
+`pivot_table` メソッドと `crosstab` 関数はどちらも、同じ shape でまったく同じ結果を生成できますし、
+両方とも `index`、`columns`、`values`、および `aggfunc` といったパラメータを共有しています。
+表面上の主な違いは、 `crosstab` は関数であり、DataFrame のメソッドではないということです。
+そのため、パラメータとして列名を指定するのではなく、Series として列を使用することを強制されます。
+性別と人種による平均給与の集計結果を見てみましょう。
+
+```py
+>>> emp.pivot_table(index='gender', columns='race', 
+                    values='salary', aggfunc='mean').round(-3)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*3pi9dGXNr0ZnFre6Sk_Jxg.png)
+
+`crosstab` とまったく同じ結果を取得するには、以下のようにします。
+
+```py
+>>> pd.crosstab(index=emp['gender'], columns=emp['race'], 
+                values=emp['salary'], aggfunc='mean').round(-3)
+```
+
+### `crosstab` は度数を見るために用意されています
+
+[クロス集計](https://en.wikipedia.org/wiki/Contingency_table)（分割表とも言う）は、2つの変数間の度数を示します。
+これは、2つの列が指定されている場合の `crosstab` のデフォルトの機能です。
+すべての人種と性別の組み合わせの度数を表示してみましょう。
+`aggfunc` を指定する必要がないことに注意してください。
+
+```py
+>>> pd.crosstab(index=emp['gender'], columns=emp['race'])
+```
+![](https://cdn-images-1.medium.com/max/1600/1*nQQxeoMoOJyEmAqnvrLt2g.png)
+
+`pivot_table` メソッドでも同じ結果を複製することができますが、 `size` 集約関数を使用しなければなりません。
+
+```py
+>>> emp.pivot_table(index='gender', columns='race', aggfunc='size')
+```
+
+### 相対頻度 - `crosstab` 独自の機能
+
+この時点では `crosstab` は `pivot_table` メソッドの一部に過ぎません。
+しかし、 `crosstab` にしか存在しない唯一の機能があり、そのため Minimally Sufficient Subset に追加することは潜在的に価値があります。
+`normalize` パラメータを使用して、グループ間の相対頻度を計算することができます。
+
+たとえば、`race` ごとに `gender` のパーセンテージの内訳が必要な場合は、`normalize` パラメータを *columns* に設定できます。
+
+```py
+>>> pd.crosstab(index=emp['gender'], columns=emp['race'], 
+                normalize='columns').round(2)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*MPhYIZ3KXwEsYOzRQ1IQEw.png)
+
+また以下のように、 *index* を指定して行を正規化したり、*all* を指定して DataFrame 全体を正規化することもできます。
+
+```py
+>>> pd.crosstab(index=emp['gender'], columns=emp['race'], 
+                normalize='all').round(3)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*FCLscpGjdtDjZ63Z79yJzA.png)
+
+### ガイダンス： 相対頻度を見たい場合のみ `crosstab` を使う
+
+それ以外の `crosstab` が必要なすべての状況は、 `pivot_table` で代用できます。
+`pivot_table` を実行した後に手動で相対頻度を計算することも可能ではあるので、 `crosstab` はそれほど必要ではないでしょう。
+しかし、読みやすく1行のコードで計算処理を書けるため、私は今後も使用していきます。
+
+
 ---
 
 ＜＜＜WIP＞＞＞
