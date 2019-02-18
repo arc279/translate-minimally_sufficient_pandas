@@ -530,6 +530,140 @@ DataFrame の列を Series のインデックスに合わせる代わりに、Da
 算術演算子と比較演算子の方がより一般的であり、こちらを最初に試しましょう。
 どうしても演算子では解決できない場合に限り、同等のメソッドを使用しましょう。
 
+## Python 組み込み関数と同名のPandas のメソッド
+
+Python のビルトイン関数と同じ名前、同じ結果を返す DataFrame / Series のメソッドがいくつかあります。これらです：
+
+* sum
+* min
+* max
+* abs
+
+1列のデータでテストして、同じ結果が得られることを確認しましょう。
+まず、学部生の人口の列 `ugds` から欠損値を除外します。
+
+```py
+>>> ugds = college['ugds'].dropna()
+>>> ugds.head()
+0     4206.0
+1    11383.0
+2      291.0
+3     5451.0
+4     4811.0
+Name: ugds, dtype: float64
+```
+
+#### Verifying `sum`
+
+```py
+>>> sum(ugds)
+16200904.0
+
+>>> ugds.sum()
+16200904.0
+```
+
+#### Verifying `max`
+
+```py
+>>> max(ugds)
+151558.0
+
+>>> ugds.max()
+151558.0
+```
+
+#### Verifying `min`
+
+```py
+>>> min(ugds)
+0.0
+
+>>> ugds.min()
+0.0
+```
+
+#### Verifying `abs`
+
+```py
+>>> abs(ugds).head()
+0     4206.0
+1    11383.0
+2      291.0
+3     5451.0
+4     4811.0
+Name: ugds, dtype: float64
+
+>>> ugds.abs().head()
+0     4206.0
+1    11383.0
+2      291.0
+3     5451.0
+4     4811.0
+Name: ugds, dtype: float64
+```
+
+### それぞれの処理時間を測ってみます
+
+#### `sum` performance
+
+```py
+>>> %timeit sum(ugds)
+644 µs ± 80.3 µs per loop
+
+>>> %timeit -n 5 ugds.sum()
+164 µs ± 81 µs per loop
+```
+
+#### `max` performance
+
+```py
+>>> %timeit -n 5 max(ugds)
+717 µs ± 46.5 µs per loop
+
+>>> %timeit -n 5 ugds.max()
+172 µs ± 81.9 µs per loop
+```
+
+#### `min` performance
+
+```py
+>>> %timeit -n 5 min(ugds)
+705 µs ± 33.6 µs per loop
+
+>>> %timeit -n 5 ugds.min()
+151 µs ± 64 µs per loop
+```
+
+#### `abs` performance
+
+```py
+>>> %timeit -n 5 abs(ugds)
+138 µs ± 32.6 µs per loop
+>>> %timeit -n 5 ugds.abs()
+128 µs ± 12.2 µs per loop
+```
+
+### `sum` `max` `min` のパフォーマンスの違い
+
+`sum` `max` `min` は明確に差が出ています。
+Pandas のメソッドが呼び出される時とは違い、Python 組み込み関数が呼び出されるときにはまったく異なるコードが実行されます。
+`sum(ugds)` を呼び出すと、各値を1つずつ繰り返すための Python の forループが作成されるのと本質的に同等です。
+一方、 `ugds.sum()` を呼び出すと、Cで書かれた Pandas 内部の sumメソッドが実行され、forループで反復するよりもはるかに高速です。
+
+そこまで差が大きくない理由は、Pandas には多くのオーバーヘッドがあることです。
+上記の代わりに NumPy array を使用して再度検証すると、10000要素の float の配列で、 Numpy array の sum はPython組み込みのsum関数を200倍ほど上回ります。
+
+### `abs` では結果に差が出ない理由
+
+abs関数と Pandasの absメソッドにパフォーマンスの違いがないことに注意してください。
+これは内部でまったく同じコードが呼び出されているためです。
+Python は abs関数の挙動を変更する手段を提供しており（訳注： [`__abs__` マジックメソッド](https://docs.python.jp/3/library/operator.html#operator.__abs__)のこと）
+、開発者はabs関数が呼び出されるたびに実行されるカスタムメソッドを実装することができます。
+そのため、 `abs(ugds)` と書いても `ugds.abs()` を呼び出すことと同等です。それらは文字通り同じです。
+
+### ガイドライン：python 組み込みの同名の関数よりも、 Pandas のメソッドを使う
+
 
 ---
 
