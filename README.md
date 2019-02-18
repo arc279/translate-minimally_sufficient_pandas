@@ -1083,6 +1083,44 @@ dtype: int64
 
 ### ガイダンス： 列の名前を変更することができ、MultiIndex を避けることができるため、`stack` より `melt` を使用する
 
+## `pivot` と `unstack` の類似点
+
+`pivot` メソッドがどのような処理を行うかは、すでに説明しました。
+`unstack` は、インデックスを値として扱う、似たような処理です。
+`pivot` で使用した単純なDataFrameを見てみましょう。
+
+```py
+>>> df = pd.read_csv('data/state_fruit.csv')
+>>> df
+```
+![](https://cdn-images-1.medium.com/max/1600/1*VCT2IEj6vIH293EWW8u7GQ.png)
+
+`unstack` メソッドはインデックス内の値を転置します。
+`pivot` メソッドで `index` および `columns` パラメータとして使用する列に対応するように、インデックスを設定する必要があります。
+やってみましょう。
+
+```py
+>>> df_idx = df.set_index(['state', 'fruit'])
+>>> df_idx
+```
+![](https://cdn-images-1.medium.com/max/1600/1*6XUD6wCxGOVL-Bjz17CF9Q.png)
+
+これで、パラメータなしで `unstack` を使用できます。
+これにより、インデックスレベルが実際のデータ（`fruit` 列）に最も近くなり、その一意の値が新しい列名になります。
+
+```py
+>>> df_idx.unstack()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*ZmwrkucRkasXAH_p6QXaig.png)
+
+結果は、`pivot` メソッドで返された結果とほぼ同じになりますが、列が MultiIndex になります。
+
+### ガイダンス： `unstack` `pivot` よりも `pivot_table` を使う
+
+`pivot` と `unstack` はどちらも同じように動作しますが、
+上述した通り、 `pivot_table` は `pivot` が扱うことができるすべてのケースを扱うことができるため、 `pivot_table` を使うことをお勧めします。
+
+
 
 ---
 
