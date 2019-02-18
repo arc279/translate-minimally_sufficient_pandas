@@ -296,6 +296,44 @@ DataFrame 内の単一のセルをを選択するために、さらなる2つの
 
 ### ガイドライン：単一セル選択に本当にパフォーマンスが必要な場合は、`at` `iat` ではなく、 NumPy配列を使用してください
 
+## メソッドの重複
+
+Pandas には全く同じことをするメソッドが複数あります。
+2つのメソッドが内部で全く同じ機能を使用している場合は、常に、それらは互いのエイリアスであると言います。
+ライブラリ内で同じ機能の重複は完全に不要であり、名前空間を汚染し、分析者に余計な情報を覚えておくよう強制します。
+
+次のセクションでは、いくつかの重複したメソッド、あるいはよく似たメソッドについて説明します。
+
+## `read_csv` と `read_table` の重複
+
+重複の例として、`read_csv` と `read_table` 関数を挙げましょう。
+どちらもテキストファイルからデータを読み込んで、まったく同じことを行います。
+唯一の違いは、 `read_csv` がデフォルトのセパレータがカンマであるのに対して、 `read_table` はタブ文字であることです。
+
+`read_csv` と `read_table` が同じ結果になることを確認しましょう。
+サンプルデータとして、public な [College Scoreboard dataset](https://collegescorecard.ed.gov/data/) を使用します。
+`equals` メソッドは、2つの DataFrameがまったく同じ値を持つかどうかを確認します。
+
+```py
+>>> college = pd.read_csv('data/college.csv')
+>>> college.head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*zdBvIsRRlux5YhAMAcxZNg.png)
+
+```py
+>>> college2 = pd.read_table('data/college.csv', delimiter=',')
+>>> college.equals(college2)
+True
+```
+
+### `read_table` は非推奨です
+
+私は、非推奨としたほうが良いと思う関数とメソッドに関して、
+[Pandas の Githubリポジトリ](https://github.com/pandas-dev/pandas/issues/18262#issuecomment-346502617) に Issue を出しています。
+`read_table` メソッドは非推奨のため、使用しないでください。
+
+### ガイドライン：区切り文字付きテキストファイルを読み込む場合は `read_csv` のみを使用してください
+
 
 ---
 
