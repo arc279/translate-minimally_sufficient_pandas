@@ -1,11 +1,11 @@
-# Overview（WIP）
+# Overview
 
 この記事は
 [pandasクックブック-―Pythonによるデータ処理のレシピ](https://www.amazon.co.jp/pandas%E3%82%AF%E3%83%83%E3%82%AF%E3%83%96%E3%83%83%E3%82%AF-%E2%80%95Python%E3%81%AB%E3%82%88%E3%82%8B%E3%83%87%E3%83%BC%E3%82%BF%E5%87%A6%E7%90%86%E3%81%AE%E3%83%AC%E3%82%B7%E3%83%94%E2%80%95-Theodore-Petrou/dp/425412242X) の著者である [Ted Petrou](https://twitter.com/tedpetrou) 氏の以下の記事、
 
 [Minimally Sufficient Pandas](https://medium.com/dunder-data/minimally-sufficient-pandas-a8e67f2a2428)
 
-を、許可を得て翻訳中のものです。
+を、許諾を得て翻訳したものです。
 https://twitter.com/arc279/status/1095511875050033152
 
 不自然な点、間違っている点などがありましたら指摘してもらえると助かります。
@@ -1120,8 +1120,155 @@ dtype: int64
 `pivot` と `unstack` はどちらも同じように動作しますが、
 上述した通り、 `pivot_table` は `pivot` が扱うことができるすべてのケースを扱うことができるため、 `pivot_table` を使うことをお勧めします。
 
+## 以上で具体例を終わります
+
+上記の具体的な例で、Pandasで最も一般的なタスクの中で、アプローチの定型手段が無い方法を、だいたいカバーできたと思います。
+いずれの例でも、私は単一のアプローチを採用することにを提案しました。
+これは、私がPandasを使用してデータ分析を行うときに使用するアプローチであり、私が生徒に教えるアプローチです。
+
+## The Zen of Python
+
+Minimally Sufficient Python は Tim Peters による Python の19の格言 [The Zen of Python](https://www.python.org/dev/peps/pep-0020/) に触発されました。
+特に注目に値する格言はこれです：
+
+> There should be one-- and preferably only one --obvious way to do it.
+
+> 何かいいやり方があるはずだ。誰が見ても明らかな、たったひとつのやり方が。
+
+私は Pandas が、今まで見てきたどのライブラリよりも、この手引きに従っていないことに気付きました。
+Minimally Sufficient Pandas は、この原則に沿うようにユーザーを誘導する試みです。
+
+## Pandas Style Guide
+
+上記の具体例では、多くのタスクに対するガイダンスを提供しましたが、ライブラリ内の全てを網羅しているわけではありません。
+同意できないガイダンスもあるでしょう。
+
+あなたがライブラリを使うのを助けるために、私は `Pandas style guide` を作成することを勧めます。
+これは、コードベースを統一させるために作成されるための、コーディングスタイルガイドと大差ありません。
+すべての Pandas を使用している分析者のチームにとって有益なものです。
+Pandasスタイルガイドを強制すると、以下のことに役立ちます：
+
+* すべての一般的なデータ分析タスクに同じ構文を使用させることができます
+* Pandas のコードを本番環境に投入するのを用意にします
+* Pandasのバグに遭遇する可能性を減らします。
+[大量の未解決のIssue](https://github.com/pandas-dev/pandas/issues)があるため、ライブラリの一部機能に限って使用することにすると、これらを回避するのに役立ちます。
 
 
----
+## Best of the API
 
-＜＜＜WIP＞＞＞
+[Pandas DataFrame APIは膨大です](http://pandas.pydata.org/pandas-docs/stable/reference/frame.html)。
+ほとんど、あるいはまったく使用されていないか、エイリアスであるメソッドが大量にあります。
+以下は、ほぼすべてのタスクを完了するのに、これだけ十分だと私が考える、 DataFrame の属性とメソッドのリストです。
+
+### 属性
+
+* columns
+* dtypes
+* index
+* shape
+* T
+* values
+
+### 集約関数
+
+* all
+* any
+* count
+* describe
+* idxmax
+* idxmin
+* max
+* mean
+* median
+* min
+* mode
+* nunique
+* sum
+* std
+* var
+
+### 集約関数ではない統計メソッド
+
+* abs
+* clip
+* corr
+* cov
+* cummax
+* cummin
+* cumprod
+* cumsum
+* diff
+* nlargest
+* nsmallest
+* pct_change
+* prod
+* quantile
+* rank
+* round
+
+### 部分選択
+
+* head
+* iloc
+* loc
+* tail
+
+### 欠損値の取り扱い
+
+* dropna
+* fillna
+* interpolate
+* isna
+* notna
+
+### Grouping
+
+* expanding
+* groupby
+* pivot_table
+* resample
+* rolling
+
+### データの結合
+
+* append
+* merge
+
+### その他
+
+* asfreq
+* astype
+* copy
+* drop
+* drop_duplicates
+* equals
+* isin
+* melt
+* plot
+* rename
+* replace
+* reset_index
+* sample
+* select_dtypes
+* shift
+* sort_index
+* sort_values
+* to_csv
+* to_json
+* to_sql
+
+### 関数群
+
+* pd.concat
+* pd.crosstab
+* pd.cut
+* pd.qcut
+* pd.read_csv
+* pd.read_json
+* pd.read_sql
+* pd.to_datetime
+* pd.to_timedelta to_sql
+
+## 結論
+
+Minimally Sufficient Pandas は、構文を見失わずに、より効果的にデータ分析で効果を上げたいという方に役立つガイドであると、強く感じます。

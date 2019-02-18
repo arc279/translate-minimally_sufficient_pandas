@@ -5,7 +5,7 @@
 
 [Minimally Sufficient Pandas](https://medium.com/dunder-data/minimally-sufficient-pandas-a8e67f2a2428)
 
-の一部を、許可を得て翻訳したものです。
+の一部を、許諾を得て翻訳したものです。
 https://twitter.com/arc279/status/1095511875050033152
 
 全文は「何故そうしたほうが良いのか？」などにも詳しく言及していて長文のため、具体例だけ先に訳しました。
