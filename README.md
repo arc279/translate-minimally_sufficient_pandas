@@ -334,6 +334,36 @@ True
 
 ### ガイドライン：区切り文字付きテキストファイルを読み込む場合は `read_csv` のみを使用してください
 
+## `isna` vs `isnull` と `notna` vs `notnull`
+
+`isna` `isnull` メソッドはどちらも、DataFrame内に欠損値があるかどうかを判別します。
+結果は常に bool 値の DataFrame （あるいは Series）になります。
+
+これらのメソッドは完全に同じです。
+一方が他方のエイリアスである、と前の段落で言った通り、両方は必要ありません。
+`na` という欠損値を表す文字列が、他に欠損値を扱う `dropna` `fillna` といったメソッド名に追加されたため、 それに合わせて `isna` メソッドも追加されました。
+紛らわしいことに、Pandas は欠損値の表現として `NaN` `None` `NaT` を使用していますが、 `NA` は使用しません。
+
+`notna` と `notnull` はお互いのエイリアスであり、単に `isna` の反対を返します。これも両方は必要ありません。
+
+`isna` が `isnull` のエイリアスであることを確認しましょう。
+
+```py
+>>> college_isna = college.isna()
+>>> college_isnull = college.isnull()
+>>> college_isna.equals(college_isnull)
+True
+```
+
+### 私は `isna` `notna` しか使いません
+
+サフィックスに `na` が付いているメソッドを使用することで、他の欠損値メソッド `dropna` `fillna` の名前と整合が取れます。
+
+Pandasは bool 値の DataFrame を反転するための演算子 `~` を提供しているため、`notna` の使用を避けることもできます。
+
+### ガイドライン： `isna` と `notna` を使いましょう
+（訳注）`isnull` `notnull` ではなく
+
 
 ---
 
