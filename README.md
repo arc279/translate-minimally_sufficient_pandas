@@ -664,6 +664,99 @@ Python は abs関数の挙動を変更する手段を提供しており（訳注
 
 ### ガイドライン：python 組み込みの同名の関数よりも、 Pandas のメソッドを使う
 
+## `groupby` による集約方法の統一
+
+集約を実行する際の `groupby` メソッドにはいくつかの書き方がありますが、コードの統一感の観点から、単一の書き方を採用することをお勧めします。
+
+### groupby の3つの要素
+
+通常、 `groupby` メソッドを呼び出すときは集約を実行します。
+最も一般的な使用法でしょう。
+`groupby` での集約処理は、3つの要素に分解できます。
+
+* 列のグループ化
+    * 列内のユニークな値の抽出
+* 列の集約
+    * 値を集計される列。通常は数値型。
+* 集約関数
+    * 値の集計方法（合計、最小、最大、平均、中央値など）
+
+### 私の `groupby` の書き方
+
+Pandas は groupby で集約する際の書き方を何パターンか用意していますが、私は以下の書き方をしています。
+
+`df.groupby('grouping column').agg({'aggregating column': 'aggregating function'})`
+
+### 州ごとの `SAT` の最大値を算出する `groupby` の書き方のビュッフェ
+
+以下では、州ごとの最大SATスコアを見つけるために、同じ（または類似の）結果を返す、いくつかの異なる書き方について説明します。
+まず、使用するデータを見てみましょう。
+
+```py
+>>> college[['stabbr', 'satmtmid', 'satvrmid', 'ugds']].head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*l100xXLSA0O0qQ5FKwvj9g.png)
+
+#### Method 1:
+
+私の推奨する集約によるグループ化のです。複雑なケースを扱います。
+
+```py
+>>> college.groupby('stabbr').agg({'satmtmid': 'max'}).head()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*edDl6MtRdExqegfl3HTe-Q.png)
+
+#### Method 2a: 
+
+集約対象のカラムはブラケット記法で選択することもできます。
+この場合、戻り値は DataFrame ではなく Series になることに気を付けてください。
+
+```py
+>>> college.groupby('stabbr')['satmtmid'].agg('max').head()
+stabbr
+AK    503.0
+AL    590.0
+AR    600.0
+AS      NaN
+AZ    580.0
+Name: satmtmid, dtype: float64
+```
+
+#### Method 2b:
+
+`agg` のエイリアスである `aggregate` メソッドを使うことも出来ます。
+結果は上記と同じ Series になります。
+
+```py
+>>> college.groupby('stabbr')['satmtmid'].aggregate('max').head()
+```
+
+#### Method 3:
+
+`agg` メソッド経由ではなく、集約関数を直接呼ぶことも出来ます。
+結果は上記と同じ Series になります。
+
+```py
+>>> college.groupby('stabbr')['satmtmid'].max().head()
+```
+
+### 私の提案する方法の主な利点
+
+この書き方だと、より複雑な集約の場合にも同じ書き方で対応できるのが、私がお勧めする理由です。
+たとえば、州ごとの学部生数の平均とともに、数学と母国語の科目のSATスコアの最大値と最小値を求めたい場合は、次のようにします。
+
+```py
+>>> df.groupby('stabbr').agg({'satmtmid': ['min', 'max'],
+                              'satvrmid': ['min', 'max'],
+                              'ugds': 'mean'}).round(0).head(10)
+```
+![](https://cdn-images-1.medium.com/max/1600/1*G0NtyGpr2yj-zkutEJHU8A.png)
+
+この手段は、他の方法では対応できません。
+
+### ガイドライン： まずは `df.groupby('grouping column').agg({'aggregating column': 'aggregating function'})` 方式の書き方を検討してください
+
+（訳注）dictの順序を保持しない python3.6 未満だと[カラムの追加される順序が不定になる](https://qiita.com/arc279/items/9165b9f9e95fcd5cc67f)ので注意
 
 ---
 
