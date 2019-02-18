@@ -1007,6 +1007,82 @@ ValueError: Index contains duplicate entries, cannot reshape
 この場合、集計を実行する必要がない場合でも、集約関数を指定する必要があります。
 
 
+## `melt` と `stack` の類似点
+
+`melt` メソッドと `stack` メソッドはまったく同じ方法でデータを変形します。
+主な違いは、`melt` メソッドはインデックスにあるデータに対しては使えないことです。`stack` メソッドは可能です。
+具体例を見たほうが理解しやすいでしょう。
+では、航空会社の到着遅延の小さなデータセットを読んでみましょう。
+
+```py
+>>> ad = pd.read_csv('data/airline_delay.csv')
+>>> ad
+```
+![](https://cdn-images-1.medium.com/max/1600/1*RfdbGDgpKeSLu3l9ioPT1g.png)
+
+このデータを再構成して、`airline` `airport` ` arrival delay` の3つの列を作成します。
+`melt` メソッドに指定する2つの主なパラメータから始めましょう、
+垂直方向のままにする（再形成しない）列名である `id_vars` と、単一の列に再形成する列名である `value_vars` です。
+
+```py
+>>> ad.melt(id_vars='airline', value_vars=['ATL', 'DEN', 'DFW'])
+```
+![](https://cdn-images-1.medium.com/max/1600/1*ylLLvR8he4xaafgrto8nJA.png)
+
+`stack` メソッドでもほぼ同じデータを作成できますが、それは再整形された列をインデックスに入れます。
+また、現在のインデックスは保持されます。
+上記と同じデータを作成するには、最初に再整形されない列にインデックスを設定する必要があります。
+やってみましょう。
+
+```py
+>>> ad_idx = ad.set_index('airline')
+>>> ad_idx
+```
+![](https://cdn-images-1.medium.com/max/1600/1*-2w2AH7eHzFu8qAHa0-Uiw.png)
+
+これで、パラメータを設定せずに `stack` を使用して、`melt` とほぼ同じ結果を得ることができます。
+
+```py
+>>> ad_idx.stack()
+airline     
+AA       ATL     4
+         DEN     9
+         DFW     5
+AS       ATL     6
+         DEN    -3
+         DFW    -5
+B6       ATL     2
+         DEN    12
+         DFW     4
+DL       ATL     0
+         DEN    -3
+         DFW    10
+dtype: int64
+```
+
+結果は、2レベルの MultiIndex を持つSeriesになります。
+データの値は同じですが、順序が異なります。
+`reset_index` を呼ぶことで、単一インデックスの DataFrame に戻ります。
+
+```py
+>>> ad_idx.stack().reset_index()
+```
+![](https://cdn-images-1.medium.com/max/1600/1*deKe-9HkffoeBQZWEIlfxg.png)
+
+### `melt` でカラム名を変更する
+
+カラム名を直接変更することができ、MultiIndex を避けることができるため、`melt` を使用することをお勧めします。
+`var_name` および `value_name` パラメータは、再整形された列の名前を変更するための `melt` のパラメータです。
+また、`id_vars` にないすべての列が再形成されるので、残りの全ての列を指定する必要もありません。
+
+```py
+>>> ad.melt(id_vars='airline', var_name='airport', 
+            value_name='arrival delay')
+```
+![](https://cdn-images-1.medium.com/max/1600/1*PIaiDr7AuXFE9lNehw2V9Q.png)
+
+### ガイダンス： 列の名前を変更することができ、MultiIndex を避けることができるため、`stack` より `melt` を使用する
+
 
 ---
 
