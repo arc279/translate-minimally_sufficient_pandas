@@ -9,6 +9,8 @@
 https://twitter.com/arc279/status/1095511875050033152
 
 不自然な点、間違っている点などがありましたら指摘してもらえると助かります。
+リポジトリは[ここ](https://github.com/arc279/translate-minimally_sufficient_pandas)にあります。
+
 
 以下、翻訳です。
 
@@ -132,9 +134,8 @@ Pandas の DataFrameから1列のデータを選択することは、最も簡�
 >>> df
 ```
 
-|以下、使用する簡単な DataFrame のサンプル|
-|--|
-|![A simple DataFrame to be used for the next several examples](https://cdn-images-1.medium.com/max/1600/1*8lCb76QHqjmEyFfC48i4YA.png "A simple DataFrame to be used for the next several examples")|
+以下で、使用する簡単な DataFrame のサンプル
+![A simple DataFrame to be used for the next several examples](https://cdn-images-1.medium.com/max/1600/1*8lCb76QHqjmEyFfC48i4YA.png "A simple DataFrame to be used for the next several examples")
 
 ### ブラケット表記での選択
 
@@ -371,7 +372,7 @@ Pandasは bool 値の DataFrame を反転するための演算子 `~` を提供�
 （訳注：表にしました）
 
 |op|method|
-|-|-|-|
+|---|---|
 |+|`add`|
 |-|`sub` `subtract`|
 |*|`mul` `multiply`|
@@ -383,7 +384,7 @@ Pandasは bool 値の DataFrame を反転するための演算子 `~` を提供�
 全ての比較演算子にも、同等の機能のメソッドがあります。
 
 |op|method|
-|-|-|-|
+|---|---|
 |>|`gt`|
 |<|`lt`|
 |>=|`ge`|
@@ -488,7 +489,9 @@ Name: ugds, dtype: float64
 >>> df_attempt = college_race * ugds
 >>> df_attempt.head()
 ```
+
 ![](https://cdn-images-1.medium.com/max/1600/1*X3bdE6iFrFKTLLqrkipLAg.png)
+
 ```py
 >>> df_attempt.shape
 (7535, 7544)
